@@ -3,11 +3,7 @@ package bruce.io.elf.buffer
 import java.nio.ByteOrder
 import java.nio.ByteBuffer
 
-class BigEndianChannelBuffer(array: Array[Byte], start: Int, end: Int) extends HeapChannelBuffer(array, start, end) {
-
-  def this(underHeapArray: Array[Byte]) {
-    this(underHeapArray, 0, underHeapArray.length)
-  }
+class BigEndianChannelBuffer(array: Array[Byte]) extends HeapChannelBuffer(array) {
 
   def this(capacity: Int) {
     this(new Array[Byte](capacity))

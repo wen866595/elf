@@ -96,7 +96,7 @@ trait ChannelBuffer {
   /**
    * 返回可写的字节数
    */
-  def writable(): Int
+  def writable(): Int = capacity - writeIndex
 
   /**
    * 返回底层的缓冲数组
@@ -118,7 +118,10 @@ object ChannelBuffer {
 
   def apply(capacity: Int, byteOrder: ByteOrder, isDirect: Boolean): ChannelBuffer = {
     if (isDirect) {
-      null
+      val byteBuffer = ByteBuffer.allocateDirect(capacity)
+      byteBuffer.order(byteOrder)
+      new DirectChannelBuffer(byteBuffer)
+      
     } else {
       if (byteOrder == ByteOrder.BIG_ENDIAN) new BigEndianChannelBuffer(capacity)
       else new LittleEndianHeapChannelBuffer(capacity)
@@ -131,13 +134,12 @@ object ChannelBuffer {
 
   def apply(array: Array[Byte], start: Int, end: Int, byteOrder: ByteOrder): ChannelBuffer = {
     var buffer: ChannelBuffer = null
+    val cap = end - start;
     
-    if (byteOrder == ByteOrder.BIG_ENDIAN) buffer = new BigEndianChannelBuffer(array, start, end)
-    else buffer = null
+    buffer = if (byteOrder == ByteOrder.BIG_ENDIAN) new BigEndianChannelBuffer(cap)
+    else new LittleEndianHeapChannelBuffer(cap)
 
-    buffer.writeIndex = end
-
-    buffer
+    buffer.put(array, start, cap)
   }
 
   def apply(byteBuffer: ByteBuffer): ChannelBuffer = {

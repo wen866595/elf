@@ -4,11 +4,9 @@ import java.nio.ByteOrder
 import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 
-abstract class HeapChannelBuffer(array: Array[Byte], start: Int, end: Int) extends ChannelBuffer {
+abstract class HeapChannelBuffer(array: Array[Byte]) extends ChannelBuffer {
 
-  override val capacity = end - start
-
-  def writable(): Int = end - writeIndex
+  override val capacity = array.length
 
   def get(): Byte = {
     val b = get(readIndex)
@@ -37,6 +35,8 @@ abstract class HeapChannelBuffer(array: Array[Byte], start: Int, end: Int) exten
   def put(src: Array[Byte]): ChannelBuffer = { put(src, 0, src.length) }
 
   def put(src: Array[Byte], offset: Int, length: Int): ChannelBuffer = {
+    if (writable() < length) throw new BufferUnderflowException()
+    
     System.arraycopy(src, offset, array, writeIndex, length)
     writeIndex = writeIndex + length
     this
@@ -57,8 +57,8 @@ abstract class HeapChannelBuffer(array: Array[Byte], start: Int, end: Int) exten
   }
 
   def clear(): ChannelBuffer = {
-    readIndex = start
-    writeIndex = start
+    readIndex = 0
+    writeIndex = 0
     this
   }
 
