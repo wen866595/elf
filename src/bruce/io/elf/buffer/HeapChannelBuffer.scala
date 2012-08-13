@@ -67,6 +67,7 @@ abstract class HeapChannelBuffer(array: Array[Byte]) extends ChannelBuffer {
    */
   def discardReaded(): ChannelBuffer = {
     val len = readable()
+//    println("readIndex:" + readIndex + ", writeIndex:" + writeIndex + ", readable:" + len)
     System.arraycopy(array, readIndex, array, 0, len)
     readIndex = 0
     writeIndex = len
