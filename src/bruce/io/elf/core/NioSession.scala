@@ -64,16 +64,19 @@ class NioSession(control: Control, reactor: ReadWriteReactor, private[core]chann
 
   private[core] def onReadable() {
     val writeBuffer = buffer.writeableByteBuffer()
-    
+
     val (totalReaded, isInputEnd) = IoUtil.readAllPossible(channel, writeBuffer)
     buffer.writeIndex = buffer.writeIndex + totalReaded
-    
-//    if (totalReaded > 0)
-//      println("totalReaded :" + totalReaded + ", isInputEnd :" + isInputEnd)
 
     if (totalReaded > 0 || (buffer.readable() > 0 && buffer.writable() <= 0)) {
-      val message = control.codec.decode(this, buffer)
-      if (message != null) control.handler.onMessageReceived(this, message)
+      // 解码消息，直到没有消息生成或没有数据可解码
+      var continue = false
+      do {
+        val message = control.codec.decode(this, buffer)
+        if (message != null) control.handler.onMessageReceived(this, message)
+        continue = message != null && buffer.readable() > 0
+      } while (continue)
+
       buffer.discardReaded()
     }
 
