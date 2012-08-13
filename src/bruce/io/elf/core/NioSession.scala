@@ -68,9 +68,6 @@ class NioSession(control: Control, reactor: ReadWriteReactor, private[core]chann
     val (totalReaded, isInputEnd) = IoUtil.readAllPossible(channel, writeBuffer)
     buffer.writeIndex = buffer.writeIndex + totalReaded
 
-    if (totalReaded > 0)
-      println("totalReaded :" + totalReaded + ", isInputEnd :" + isInputEnd)
-
     if (totalReaded > 0 || (buffer.readable() > 0 && buffer.writable() <= 0)) {
       // 解码消息，直到没有消息生成或没有数据可解码
       var continue = false
