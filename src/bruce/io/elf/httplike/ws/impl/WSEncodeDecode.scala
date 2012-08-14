@@ -13,101 +13,83 @@ import bruce.io.elf.httplike.Response
 class WSEncodeDecode extends EncodeDecode {
 
   def decode(session: NioSession, buffer: ChannelBuffer): Any = {
+    if (session.attribute("headerEnd") == null) return parseRequest(session, buffer)
+
+    if (session.attribute("headerEnd") != null) return parseMessage(session, buffer)
+
+    null
+  }
+
+  private def parseMessage(session: NioSession, buffer: ChannelBuffer): Any = {
     val wsconnection = session.attribute("wsconnection").asInstanceOf[DefaultServerConnection]
 
-    if (session.attribute("headerEnd") == null) {
-      println("parse request header .")
-      // do handshake
-      if (session.attribute("request") == null) {
-        var requestLine = WSUtil.getLine(buffer)
-        println("requestLine :" + requestLine)
-        if (requestLine != null) {
-          val request = new Request(requestLine)
-          session.setAttribute("request", request)
-        }
+    if (wsconnection.decodeState == WaitNewFrame && buffer.readable() >= 2) {
+      val first = buffer.get()
+      val second = buffer.get()
+      val frame = new FrameBuilder(first, second)
+      wsconnection.currentFrame = frame
+
+      wsconnection.decodeState = WaitFrameHeadEnd
+    }
+
+    val frame = wsconnection.currentFrame
+    if (wsconnection.decodeState == WaitFrameHeadEnd && buffer.readable() >= frame.remainHeadLen) {
+      finishHead(buffer, frame)
+      wsconnection.currentFrameReadedBytes = 0
+      wsconnection.decodeState = WaitFrameDataEnd
+    }
+
+    if (wsconnection.decodeState == WaitFrameDataEnd) {
+      var currentFrameReadedBytes = wsconnection.currentFrameReadedBytes
+      var toReadLen = Math.min(buffer.readable(), frame.dataLenB - currentFrameReadedBytes).toInt
+
+      if (toReadLen > 0) { // 帧可能没有主体
+        buffer.get(frame.dataB, currentFrameReadedBytes, toReadLen)
+        currentFrameReadedBytes += frame.dataLenB.toInt
+        wsconnection.currentFrameReadedBytes = currentFrameReadedBytes
       }
 
-      if (session.attribute("request") != null) {
-        var headerEnd = false
-        var line: String = null
-        val request = session.attribute("request").asInstanceOf[Request]
-        do {
-          line = WSUtil.getLine(buffer)
-          if (line != null) {
-            line = line.trim()
-            if ("".equals(line)) {
-              headerEnd = true
-              session.setAttribute("headerEnd", headerEnd)
-              session.setAttribute("decodeState", WaitNewMessage)
-              println("parse request header end .")
-            } else request.addHeader(line)
-          }
-        } while (line != null && !headerEnd)
+      if (currentFrameReadedBytes == frame.dataLenB) { // frame completed
+        wsconnection.currentFrame = null
+        wsconnection.currentFrameReadedBytes = 0
+        wsconnection.decodeState = WaitNewFrame
+        if (frame.isMasked) WSUtil.mask(frame.maskKeyB, frame.dataB)
 
-        if (headerEnd) return request
+        println("get a new frame " + (frame.finB + ":" + frame.opcodeB) + " . frame data :" + Arrays.toString(frame.dataB))
+        return frame.build() // 解析完成后转换为Frame
       }
     }
 
-    if (session.attribute("headerEnd") != null) {
-      // decode message
-      var continue = false
+    null
+  }
+
+  private def parseRequest(session: NioSession, buffer: ChannelBuffer): Any = {
+    if (session.attribute("request") == null) {
+      var requestLine = WSUtil.getLine(buffer)
+      if (requestLine != null) {
+        val request = new Request(requestLine)
+        session.setAttribute("request", request)
+      }
+    }
+
+    if (session.attribute("request") != null) {
+      var headerEnd = false
+      var line: String = null
+      val request = session.attribute("request").asInstanceOf[Request]
       do {
-        continue = true
-        wsconnection.decodeState match {
-          case WaitNewFrame => {
-            if (buffer.readable() >= 2) {
-              val first = buffer.get()
-              val second = buffer.get()
-              val frame = new FrameBuilder(first, second)
-              wsconnection.currentFrame = frame
-
-              wsconnection.decodeState = WaitFrameHeadEnd
-              println("WaitFrameHeadEnd . payloadBytes :" + frame.remainHeadLen + ", dataLen :" + frame.dataLenB)
-            } else continue = false
-          }
-
-          case WaitFrameHeadEnd => {
-            val frame = wsconnection.currentFrame
-
-            if (buffer.readable() >= frame.remainHeadLen) {
-              finishHead(buffer, frame)
-              wsconnection.currentFrameReadedBytes = 0
-              wsconnection.decodeState = WaitFrameDataEnd
-              println("WaitFrameDataEnd . maskKey :" + Arrays.toString(frame.maskKeyB))
-
-            } else { // not enough data
-              continue = false
-              wsconnection.decodeState = WaitFrameHeadEnd
-            }
-          }
-
-          case WaitFrameDataEnd => {
-            val frame = wsconnection.currentFrame
-            var currentFrameReadedBytes = wsconnection.currentFrameReadedBytes
-            var toReadLen = buffer.readable()
-            if (toReadLen >= frame.dataLenB) {
-              toReadLen = frame.dataLenB.toInt
-            }
-            buffer.get(frame.dataB, currentFrameReadedBytes, toReadLen)
-            currentFrameReadedBytes += frame.dataLenB.toInt
-
-            if (currentFrameReadedBytes == frame.dataLenB) { // frame completed
-              wsconnection.currentFrame = null
-              wsconnection.currentFrameReadedBytes = 0
-              wsconnection.decodeState = WaitNewFrame
-              if (frame.isMasked)
-                WSUtil.mask(frame.maskKeyB, frame.dataB)
-
-              println("get a new frame " + (frame.finB + ":" + frame.opcodeB) + " . frame data :" + Arrays.toString(frame.dataB))
-              return frame.build() // 解析完成后转换为Frame
-
-            } else {
-              wsconnection.currentFrameReadedBytes = currentFrameReadedBytes
-              continue = false // no more data
-            }
-          }
+        line = WSUtil.getLine(buffer)
+        if (line != null) {
+          line = line.trim()
+          if ("".equals(line)) {
+            headerEnd = true
+            session.setAttribute("headerEnd", headerEnd)
+            session.setAttribute("decodeState", WaitNewMessage)
+            println("parse request header end .")
+          } else request.addHeader(line)
         }
-      } while (continue)
+      } while (line != null && !headerEnd)
+
+      if (headerEnd) return request
     }
 
     null
