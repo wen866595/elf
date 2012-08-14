@@ -9,14 +9,14 @@ import bruce.io.elf.httplike.ws.api.MessageType
 import bruce.io.elf.httplike.ws.api.WSServlet
 import bruce.io.elf.httplike.ws.api.Opcode
 import bruce.io.elf.httplike.ws.api.Constants
+import ConnectionState._
+import DecodeState._
 
 abstract class AbstractConnection(val session: NioSession, val servlet: WSServlet) extends Connection {
-  import ConnectionState._
-  import DecodeState._
   var state: ConnectionState = CONNECTING
   var decodeState: DecodeState = WaitNewFrame
   var isCloseFrameSent: Boolean = false // 是否发送关闭帧
-  var isRemoteCloseFrameRcv = false		// 是否接收到对端的关闭帧
+  var isRemoteCloseFrameRcv = false // 是否接收到对端的关闭帧
 
   private var currentMessage: MessageImpl = null
 
@@ -50,32 +50,35 @@ abstract class AbstractConnection(val session: NioSession, val servlet: WSServle
   def handleContralFrame(frame: Frame) {
     frame.opcode match {
       case Opcode.Ping =>
-        val res = Frame.pong(frame.data)
-        session.write(res)
+        val pong = Frame.pong(frame.data)
+        session.write(pong)
 
       case Opcode.Pong =>
 
       case Opcode.Close => {
         isRemoteCloseFrameRcv = true
-        
-        val data = frame.data
 
-        val (statusCode, reason) = if (frame.dataLen > 0) {
-          // 关闭帧：如果有主体，主体的前2个字节必须是2字节的无符号整数（按网络字节序）
-          if (frame.dataLen < 2) servlet.onError(this, new IllegalStateException("close frame has a body, but not contains statusCode ."))
+        if (isCloseFrameSent) {
+          session.close(true)
 
-          val statusCode = data(0) & 0xFF << 8 | data(1) & 0xFF
-          val reason = new String(data.slice(2, data.length), Constants.DEFAULT_CHARSET)
-          (statusCode, reason)
-        } else (-1, null)
+        } else {
+          val data = frame.data
 
-        if(!isCloseFrameSent) {
-          isCloseFrameSent = true
-          val closeF = Frame.close(statusCode, reason)
-          session.write(closeF)
+          val (statusCode, reason) = if (frame.dataLen > 0) {
+            // 关闭帧：如果有主体，主体的前2个字节必须是2字节的无符号整数（按网络字节序）
+            if (frame.dataLen < 2) servlet.onError(this, new IllegalStateException("close frame has a body, but not contains statusCode ."))
+
+            val statusCode = data(0) & 0xFF << 8 | data(1) & 0xFF
+            val reason = new String(data.slice(2, data.length), Constants.DEFAULT_CHARSET)
+            (statusCode, reason)
+          } else (-1, null)
+
+          close(statusCode, reason)
+
+          servlet.onClose(this, statusCode, reason)
+          
+          session.close(false)
         }
-        
-        servlet.onClose(this, statusCode, reason)
       }
 
       case _ =>

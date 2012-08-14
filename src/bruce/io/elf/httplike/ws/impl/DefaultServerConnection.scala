@@ -14,7 +14,7 @@ class DefaultServerConnection(session: NioSession, servlet: WSServlet) extends A
 
   def handshake(request: Request) {
     val validRes = ValidUtil.validRequestHeaders(request.getHeaders())
-    
+
     val res =
       if (validRes == null) {
         val res = new Response("HTTP/1.1", 101, "Switching Protocols")
@@ -26,15 +26,19 @@ class DefaultServerConnection(session: NioSession, servlet: WSServlet) extends A
       } else new Response("HTTP/1.1", 401, validRes)
 
     session.write(res)
-/*
+
+    /*
     println("ready to send ping .")
     val ping = Frame.ping("ping from server .".getBytes())
     session.write(ping)*/
   }
 
-  def close() {
-    val res = Frame.close()
-    session.write(res)
+  def close(statusCode: Int, reason: String) {
+    if (!isCloseFrameSent) {
+      isCloseFrameSent = true
+      val res = Frame.close(statusCode, reason)
+      session.write(res)
+    }
   }
 
   var request: Request = null
