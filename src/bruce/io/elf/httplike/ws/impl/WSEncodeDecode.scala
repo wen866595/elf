@@ -26,8 +26,7 @@ class WSEncodeDecode extends EncodeDecode {
     if (wsconnection.decodeState == WaitNewFrame && buffer.readable() >= 2) {
       val first = buffer.get()
       val second = buffer.get()
-      val frame = new FrameBuilder(first, second)
-      wsconnection.currentFrame = frame
+      wsconnection.currentFrame = new FrameBuilder(first, second)
 
       wsconnection.decodeState = WaitFrameHeadEnd
     }
@@ -45,7 +44,7 @@ class WSEncodeDecode extends EncodeDecode {
 
       if (toReadLen > 0) { // 帧可能没有主体
         buffer.get(frame.dataB, currentFrameReadedBytes, toReadLen)
-        currentFrameReadedBytes += frame.dataLenB.toInt
+        currentFrameReadedBytes += toReadLen
         wsconnection.currentFrameReadedBytes = currentFrameReadedBytes
       }
 
