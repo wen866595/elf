@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
-class AcceptorReactor(control: Control, port: Int) extends Thread(Config.Acceptor_ThreadName) {
+class AcceptorReactor(control: Control) extends Thread(Config.acceptorThreadName) {
   private var acceptSelector: Selector = null
   private var serverSocketChannel: ServerSocketChannel = null
 
@@ -24,13 +24,13 @@ class AcceptorReactor(control: Control, port: Int) extends Thread(Config.Accepto
     acceptSelector = Selector.open()
     serverSocketChannel = ServerSocketChannel.open()
     serverSocketChannel.configureBlocking(false)
-    serverSocketChannel.bind(new InetSocketAddress("localhost", port), Config.Acceptor_Backlog)
+    serverSocketChannel.bind(new InetSocketAddress(Config.acceptorHostName, Config.acceptorListenPort), Config.acceptorBacklog)
 
     serverSocketChannel.register(acceptSelector, SelectionKey.OP_ACCEPT)
   }
 
   private def doSelect() {
-    var next = Config.Acceptor_SelectInternalTime
+    var next = Config.acceptorSelectInternalTime
     while (!isStop) {
       val selectedSize = acceptSelector.select(next)
       val selectedSet = acceptSelector.selectedKeys()

@@ -5,8 +5,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.Executors
 
 class Control(val handler: Handler, val codec: EncodeDecode) {
-  private val reactorSize = Config.ReactorSize
-  private val workers = Executors.newFixedThreadPool(reactorSize * 2)
+  private val reactorSize = Config.reactorSize
+  private val workers = Executors.newFixedThreadPool(Config.reactorWrokerSize)
   private val reactorRunner = Executors.newFixedThreadPool(reactorSize)
   private val reactors = new Array[ReadWriteReactor](reactorSize)
 

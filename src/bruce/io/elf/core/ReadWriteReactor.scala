@@ -9,7 +9,7 @@ import java.nio.channels.SelectableChannel
 
 class ReadWriteReactor(id: Int, workers: ExecutorService, control: Control) extends Runnable {
 
-  private val SelectInternalTime = Config.Reactor_SelectInternalTime
+  private val SelectInternalTime = Config.reactorSelectInternalTime
   private val registerQueue = new java.util.concurrent.ConcurrentLinkedQueue[SocketChannel]()
   private val managedSession = new java.util.concurrent.ConcurrentHashMap[NioSession, SelectionKey]
 
