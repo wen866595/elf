@@ -1,0 +1,102 @@
+
+<html>
+<head>
+	<title>WebSocket Test</title>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<h2>WebSocket Test</h2>
+
+	<div id="output"></div>
+
+	<input type="text" id="inputText" value="" /><br/>
+	<input type="button" id="sendBtn" value="send" /><br/>
+	<input type="button" id="clearBtn" value="clear screen" /><br/>
+	
+	<input type="button" id="closeBtn" value="close ws" /><br/>
+	<input type="button" id="reConnectBtn" value="reConnect ws" /><br/>
+</body>
+
+<script language="javascript" type="text/javascript">
+
+  var wsUri = "ws://127.0.0.1:8080/ws";
+  var output;
+  var textObj;
+
+  function init()
+  {
+    output = document.getElementById("output");
+	textObj = document.getElementById("inputText");
+	document.getElementById("closeBtn").onclick = function() {
+		websocket.close();
+	};
+	
+	document.getElementById("reConnectBtn").onclick = function() {
+		testWebSocket();
+	};
+	
+	document.getElementById("clearBtn").onclick = function() {
+		document.getElementById("output").innerHTML = '';
+	};
+	
+	document.getElementById('sendBtn').onclick = function() {
+		var text = textObj.value;
+		doSend(text);
+		textObj.value = '';
+	};
+    testWebSocket();
+  }
+
+  function testWebSocket()
+  {
+    websocket = new WebSocket(wsUri);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
+
+  function onOpen(evt)
+  {
+    writeToScreen("CONNECTED");
+    doSend("WebSocket rocks");
+  }
+
+  function onClose(evt)
+  {
+    writeToScreen("DISCONNECTED");
+  }
+
+  function onMessage(evt)
+  {
+    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+  //  websocket.close();
+  }
+
+  function onError(evt)
+  {
+	for(i in evt) {
+	//	alert(i + ':' + evt[i]);
+	}
+    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+  }
+
+  function doSend(message)
+  {
+    writeToScreen("SENT: " + message); 
+    websocket.send(message);
+  }
+
+  function writeToScreen(message)
+  {
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
+  }
+
+  window.addEventListener("load", init, false);
+
+</script>
+
+</html> 
