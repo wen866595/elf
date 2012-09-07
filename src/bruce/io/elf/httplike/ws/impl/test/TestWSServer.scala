@@ -1,16 +1,12 @@
 package bruce.io.elf.httplike.ws.impl.test
 
-import bruce.io.elf.httplike.ws.impl.WSEncodeDecode
-import bruce.io.elf.core.ServerControl
-import bruce.io.elf.httplike.ws.impl.WSHandler
+import bruce.io.elf.httplike.ws.impl.WSServer
+import bruce.io.elf.httplike.ws.api.WSServlet
 
 object TestWSServer {
 
   def main(args: Array[String]) {
-    val codec = new WSEncodeDecode()
-    val handler = new WSHandler()
-    val control = new ServerControl(handler, codec)
-
-    control.start()
+    val server = new WSServer(new WSServlet())
+    server.start()
   }
 }

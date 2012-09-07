@@ -9,8 +9,9 @@ import bruce.io.elf.httplike.ws.api.Frame
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class WSHandler extends Handler {
-  val wsservlet = new WSServlet()
+class WSHandler (val wsservlet: WSServlet) extends Handler {
+  require(wsservlet != null)
+//  val wsservlet = new WSServlet()
 
   def onSessionCreated(session: NioSession) {
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")
