@@ -16,7 +16,7 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
 
   def putChar(ch: Char): ChannelBuffer = {
     array(writeIndex) = ch.asInstanceOf[Byte]
-    array(writeIndex + 1) = (ch >>> 8 & 0xff).asInstanceOf[Byte]
+    array(writeIndex + 1) = (ch >>> 8).asInstanceOf[Byte]
     writeIndex = writeIndex + 2
     this
   }
@@ -29,7 +29,7 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
 
   def putShort(sh: Short): ChannelBuffer = {
     array(writeIndex) = sh.asInstanceOf[Byte]
-    array(writeIndex + 1) = (sh >>> 8 & 0xff).asInstanceOf[Byte]
+    array(writeIndex + 1) = (sh >>> 8).asInstanceOf[Byte]
     writeIndex = writeIndex + 2
     this
   }
@@ -46,9 +46,9 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
 
   def putInt(int: Int): ChannelBuffer = {
     array(writeIndex) = (int).asInstanceOf[Byte]
-    array(writeIndex + 1) = (int >>> 8 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 2) = (int >>> 16 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 3) = (int >>> 24 & 0xff).asInstanceOf[Byte]
+    array(writeIndex + 1) = (int >>> 8).asInstanceOf[Byte]
+    array(writeIndex + 2) = (int >>> 16).asInstanceOf[Byte]
+    array(writeIndex + 3) = (int >>> 24).asInstanceOf[Byte]
 
     writeIndex = writeIndex + 4
     this
@@ -70,13 +70,13 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
 
   def putLong(long: Long): ChannelBuffer = {
     array(writeIndex) = (long).asInstanceOf[Byte]
-    array(writeIndex + 1) = (long >>> 56 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 2) = (long >>> 48 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 3) = (long >>> 40 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 4) = (long >>> 32 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 5) = (long >>> 24 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 6) = (long >>> 16 & 0xff).asInstanceOf[Byte]
-    array(writeIndex + 7) = (long >>> 8 & 0xff).asInstanceOf[Byte]
+    array(writeIndex + 1) = (long >>> 8).asInstanceOf[Byte]
+    array(writeIndex + 2) = (long >>> 16).asInstanceOf[Byte]
+    array(writeIndex + 3) = (long >>> 24).asInstanceOf[Byte]
+    array(writeIndex + 4) = (long >>> 32).asInstanceOf[Byte]
+    array(writeIndex + 5) = (long >>> 40).asInstanceOf[Byte]
+    array(writeIndex + 6) = (long >>> 48).asInstanceOf[Byte]
+    array(writeIndex + 7) = (long >>> 56).asInstanceOf[Byte]
 
     writeIndex = writeIndex + 8
     this
