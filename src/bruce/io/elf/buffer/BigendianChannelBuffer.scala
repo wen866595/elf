@@ -10,9 +10,9 @@ class BigEndianChannelBuffer(array: Array[Byte]) extends HeapChannelBuffer(array
   }
 
   def getChar(): Char = {
-    val char = ((array(readIndex) & 0xff << 8) | (array(readIndex + 1) & 0xff)).asInstanceOf[Char]
+    val char = ((array(readIndex) & 0xff) << 8) | (array(readIndex + 1) & 0xff)
     readIndex = readIndex + 2
-    char
+    char.asInstanceOf[Char]
   }
 
   def putChar(ch: Char): ChannelBuffer = {
@@ -23,9 +23,9 @@ class BigEndianChannelBuffer(array: Array[Byte]) extends HeapChannelBuffer(array
   }
 
   def getShort(): Short = {
-    val short = ((array(readIndex) & 0xff << 8) | (array(readIndex + 1) & 0xff)).asInstanceOf[Short]
+    val short = ((array(readIndex) & 0xff) << 8) | (array(readIndex + 1) & 0xff)
     readIndex = readIndex + 2
-    short
+    short.asInstanceOf[Short]
   }
 
   def putShort(sh: Short): ChannelBuffer = {
@@ -36,10 +36,10 @@ class BigEndianChannelBuffer(array: Array[Byte]) extends HeapChannelBuffer(array
   }
 
   def getInt(): Int = {
-    val int = array(readIndex) & 0xff << 24 |
-      array(readIndex + 1) & 0xff << 16 |
-      array(readIndex + 2) & 0xff << 8 |
-      array(readIndex + 3) & 0xff
+    val int = (array(readIndex) & 0xff) << 24 |
+      (array(readIndex + 1) & 0xff) << 16 |
+      (array(readIndex + 2) & 0xff) << 8 |
+      (array(readIndex + 3) & 0xff)
 
     readIndex = readIndex + 4
     int
@@ -56,14 +56,14 @@ class BigEndianChannelBuffer(array: Array[Byte]) extends HeapChannelBuffer(array
   }
 
   def getLong(): Long = {
-    val long = array(readIndex) & 0xff << 56 |
-      array(readIndex + 1) & 0xff << 48 |
-      array(readIndex + 2) & 0xff << 40 |
-      array(readIndex + 3) & 0xff << 32 |
-      array(readIndex + 4) & 0xff << 24 |
-      array(readIndex + 5) & 0xff << 16 |
-      array(readIndex + 6) & 0xff << 8 |
-      array(readIndex + 7) & 0xff
+    val long = (array(readIndex) & 0xff) << 56 |
+      (array(readIndex + 1) & 0xff) << 48 |
+      (array(readIndex + 2) & 0xff) << 40 |
+      (array(readIndex + 3) & 0xff) << 32 |
+      (array(readIndex + 4) & 0xff) << 24 |
+      (array(readIndex + 5) & 0xff) << 16 |
+      (array(readIndex + 6) & 0xff) << 8 |
+      (array(readIndex + 7) & 0xff)
 
     readIndex = readIndex + 8
     long

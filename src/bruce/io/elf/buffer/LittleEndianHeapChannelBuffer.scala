@@ -9,9 +9,9 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
   }
 
   def getChar(): Char = {
-    val char = (array(readIndex + 1) & 0xff << 8 | array(readIndex) & 0xff).asInstanceOf[Char]
+    val char = (array(readIndex + 1) & 0xff) << 8 | array(readIndex) & 0xff
     readIndex = readIndex + 2
-    char
+    char.asInstanceOf[Char]
   }
 
   def putChar(ch: Char): ChannelBuffer = {
@@ -22,9 +22,9 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
   }
 
   def getShort(): Short = {
-    val short = (array(readIndex + 1) & 0xff << 8 | array(readIndex) & 0xff).asInstanceOf[Short]
+    val short = (array(readIndex + 1) & 0xff) << 8 | array(readIndex) & 0xff
     readIndex = readIndex + 2
-    short
+    short.asInstanceOf[Short]
   }
 
   def putShort(sh: Short): ChannelBuffer = {
@@ -35,14 +35,13 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
   }
 
   def getInt(): Int = {
-    val int = (
-      array(readIndex + 3) & 0xff << 24 |
-      array(readIndex + 2) & 0xff << 16 |
-      array(readIndex + 1) & 0xff << 8 |
-      array(readIndex) & 0xff).asInstanceOf[Int]
+    val int = (array(readIndex + 3) & 0xff) << 24 |
+      (array(readIndex + 2) & 0xff) << 16 |
+      (array(readIndex + 1) & 0xff) << 8 |
+      (array(readIndex) & 0xff)
 
     readIndex = readIndex + 4
-    int
+    int.asInstanceOf[Int]
   }
 
   def putInt(int: Int): ChannelBuffer = {
@@ -56,17 +55,16 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
   }
 
   def getLong(): Long = {
-    val long = (
-      array(readIndex + 7) & 0xff << 56 |
-      array(readIndex + 6) & 0xff << 48 |
-      array(readIndex + 5) & 0xff << 40 |
-      array(readIndex + 4) & 0xff << 32 |
-      array(readIndex + 3) & 0xff << 24 |
-      array(readIndex + 2) & 0xff << 16 |
-      array(readIndex + 1) & 0xff << 8 |
-      array(readIndex) & 0xff).asInstanceOf[Int]
+    val long = (array(readIndex + 7) & 0xff) << 56 |
+      (array(readIndex + 6) & 0xff) << 48 |
+      (array(readIndex + 5) & 0xff) << 40 |
+      (array(readIndex + 4) & 0xff) << 32 |
+      (array(readIndex + 3) & 0xff) << 24 |
+      (array(readIndex + 2) & 0xff) << 16 |
+      (array(readIndex + 1) & 0xff) << 8 |
+      (array(readIndex) & 0xff)
 
-    readIndex = readIndex + 4
+    readIndex = readIndex + 8
     long
   }
 
@@ -80,6 +78,7 @@ class LittleEndianHeapChannelBuffer(array: Array[Byte]) extends HeapChannelBuffe
     array(writeIndex + 6) = (long >>> 16 & 0xff).asInstanceOf[Byte]
     array(writeIndex + 7) = (long >>> 8 & 0xff).asInstanceOf[Byte]
 
+    writeIndex = writeIndex + 8
     this
   }
 

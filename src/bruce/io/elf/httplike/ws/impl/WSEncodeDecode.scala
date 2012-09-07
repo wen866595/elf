@@ -95,13 +95,13 @@ class WSEncodeDecode extends EncodeDecode {
   }
 
   private def finishHead(buffer: ChannelBuffer, frame: FrameBuilder) {
+    if (frame.payloadBytes == 2) frame.dataLenB = buffer.getShort() & 0x0FFFF
+    else if (frame.payloadBytes == 8) frame.dataLenB = buffer.getLong()
+
     if (frame.isMasked) {
       frame.maskKeyB = new Array[Byte](4)
       buffer.get(frame.maskKeyB)
     }
-
-    if (frame.payloadBytes == 2) frame.dataLenB = buffer.getShort().toLong
-    else if (frame.payloadBytes == 8) frame.dataLenB = buffer.getLong()
 
     // TODO 保存数据的数组使用了   Int
     frame.dataB = new Array[Byte](frame.dataLenB.toInt)
