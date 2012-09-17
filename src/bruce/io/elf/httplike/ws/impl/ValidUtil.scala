@@ -13,7 +13,7 @@ object ValidUtil {
     val base = sk + WS_GUID
 
     val md = MessageDigest.getInstance("SHA-1")
-    val digest = md.digest(base.getBytes())
+    val digest = md.digest(base.getBytes("UTF-8"))
 
     new sun.misc.BASE64Encoder().encode(digest)
   }

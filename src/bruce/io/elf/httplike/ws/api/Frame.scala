@@ -77,7 +77,7 @@ object Frame {
   def text(string: String, maskKeyArr: Array[Byte]): Frame = {
     if (string == null || string.trim().length() == 0) throw new IllegalArgumentException("text data must not be blank !")
 
-    apply(Opcode.Text, string.getBytes(), maskKeyArr)
+    apply(Opcode.Text, string.getBytes("UTF-8"), maskKeyArr)
   }
 
   def binary(dataArr: Array[Byte]): Frame = { binary(dataArr, null) }
@@ -109,7 +109,7 @@ object Frame {
       data(0) = (code & 0xFF00 >> 8).toByte
       data(1) = (code & 0xFF).toByte
 
-      val rb = reason.getBytes()
+      val rb = reason.getBytes("UTF-8")
       data = data ++ rb
 
     } else data = emptyByteArray

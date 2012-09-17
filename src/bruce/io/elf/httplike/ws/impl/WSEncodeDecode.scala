@@ -54,7 +54,7 @@ class WSEncodeDecode extends EncodeDecode {
         wsconnection.decodeState = WaitNewFrame
         if (frame.isMasked) WSUtil.mask(frame.maskKeyB, frame.dataB)
 
-        println("get a new frame " + (frame.finB + ":" + frame.opcodeB) + " . frame data :" + Arrays.toString(frame.dataB))
+        println("get a new frame " + (frame.finB + ":" + frame.opcodeB))	//  + " . frame data :" + Arrays.toString(frame.dataB)
         return frame.build() // 解析完成后转换为Frame
       }
     }
