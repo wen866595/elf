@@ -1,16 +1,20 @@
 package bruce.io.elf.core
 
-object Config {
-  def reactorSize = 2
-  def reactorWrokerSize = reactorSize * 2
+import java.net.InetSocketAddress
+import java.net.SocketAddress
 
-  def acceptorThreadName = "Acceptor-0"
-    def acceptorHostName = "localhost"
-  def acceptorListenPort = 8080
-  def acceptorSelectInternalTime = 1000
-  def acceptorBacklog = 100
+class Config {
+  val reactorSize = 2
+  val reactorWrokerSize = reactorSize * 2
 
-  def reactorSelectInternalTime = 1000
+  val acceptorThreadName = "Acceptor-0"
+  val acceptorHostName = "localhost"
+  val acceptorListenPort = 8080
+  lazy val acceptorListenAddress: SocketAddress = new InetSocketAddress(acceptorHostName, acceptorListenPort)
+  val acceptorSelectInternalTime = 1000
+  val acceptorBacklog = 100
 
-  def sessionBufferSize = 8 * 1024
+  val reactorSelectInternalTime = 1000
+
+  val sessionBufferSize = 8 * 1024
 }

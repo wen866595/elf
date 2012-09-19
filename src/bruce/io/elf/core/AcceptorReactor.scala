@@ -1,13 +1,11 @@
 package bruce.io.elf.core
 
+import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.nio.channels.ServerSocketChannel
-import java.nio.ByteBuffer
-import java.net.InetSocketAddress
-import java.util.concurrent.Executors
 
-class AcceptorReactor(control: Control) extends Thread(Config.acceptorThreadName) {
+class AcceptorReactor(control: Control) extends Thread(control.config.acceptorThreadName) {
   private var acceptSelector: Selector = null
   private var serverSocketChannel: ServerSocketChannel = null
 
@@ -24,17 +22,16 @@ class AcceptorReactor(control: Control) extends Thread(Config.acceptorThreadName
     acceptSelector = Selector.open()
     serverSocketChannel = ServerSocketChannel.open()
     serverSocketChannel.configureBlocking(false)
-    serverSocketChannel.bind(new InetSocketAddress(Config.acceptorHostName, Config.acceptorListenPort), Config.acceptorBacklog)
+    serverSocketChannel.bind(control.config.acceptorListenAddress, control.config.acceptorBacklog)
 
     serverSocketChannel.register(acceptSelector, SelectionKey.OP_ACCEPT)
   }
 
   private def doSelect() {
-    var next = Config.acceptorSelectInternalTime
+    var next = control.config.acceptorSelectInternalTime
     while (!isStop) {
       val selectedSize = acceptSelector.select(next)
       val selectedSet = acceptSelector.selectedKeys()
-      //      println(selectedSize + ", " + selectedSet.size())
       if (selectedSet.size() > 0) {
         dispatchSelectedSet(selectedSet)
       }

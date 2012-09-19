@@ -9,7 +9,7 @@ class NioSession(control: Control, reactor: ReadWriteReactor, private[core]chann
   private val writeQueue = new java.util.concurrent.ConcurrentLinkedQueue[Any]
   private val attributeMap = new java.util.HashMap[String, Any]
 
-  lazy private val buffer = ChannelBuffer(Config.sessionBufferSize)
+  lazy private val buffer = ChannelBuffer(control.config.sessionBufferSize)
   private var writeBuffer: ByteBuffer = null
   @volatile private var closeAfterSent = false
 

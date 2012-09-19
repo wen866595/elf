@@ -4,9 +4,9 @@ import java.nio.channels.SocketChannel
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.Executors
 
-class Control(val handler: Handler, val codec: EncodeDecode) {
-  private val reactorSize = Config.reactorSize
-  private val workers = Executors.newFixedThreadPool(Config.reactorWrokerSize)
+abstract class Control(val config: Config, val handler: Handler, val codec: EncodeDecode) {
+  private val reactorSize = config.reactorSize
+  private val workers = Executors.newFixedThreadPool(config.reactorWrokerSize)
   private val reactorRunner = Executors.newFixedThreadPool(reactorSize)
   private val reactors = new Array[ReadWriteReactor](reactorSize)
 
@@ -46,5 +46,4 @@ class Control(val handler: Handler, val codec: EncodeDecode) {
     }
     i
   }
-
 }

@@ -6,7 +6,7 @@ import bruce.io.elf.httplike.ws.api.WSServlet
 object TestWSServer {
 
   def main(args: Array[String]) {
-    val server = new WSServer(new WSServlet())
+    val server = new WSServer(8080, new WSServlet())
     server.start()
   }
 }
